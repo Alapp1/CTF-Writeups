@@ -1,0 +1,15 @@
+I completed the PicoCTF challenge "Permissions": https://play.picoctf.org/practice/challenge/363?category=5&difficulty=2&page=1
+
+This challenge involved heightening user permissions to a privileged shell to access a file that could only be opened by the root user. You begin the challenge by using ssh to connect to a server as "picoplayer". Unforunately, you can't get root permissions with this user, and many sudo commands are blocked. To see what sudo commands I could run, used the command "sudo -l", which gave the output:
+
+-------------------------------------------------------------------------
+picoplayer@challenge:/$ sudo -l
+Matching Defaults entries for picoplayer on challenge:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User picoplayer may run the following commands on challenge:
+    (ALL) /usr/bin/vi
+-------------------------------------------------------------------------
+
+This meant I can use vi and vim commands as the root. Being able to use vi as the root user is a huge vulnerability, since you can open a shell inside of it. After running "sudo vi", the vi editor opened, and I used the ":!bash" command to enter command line mode (":"), and run the "bash" command as the root user ("!bash"). This opened a privileged bash shell where I could open the root directory, and read the flag within the ".flag.txt" file.
