@@ -1,0 +1,52 @@
+This is the "PW Crack 5" challenge off of picoCTF: https://play.picoctf.org/practice/challenge/251?category=5&difficulty=2&page=1&search=serpentine
+
+For this challenge, you are given an encoded level5.flag.txt.enc file, a level5.hash.bin file, a dictionary.txt file, and level5.py file. When ran, level5.py asks the user for the "password for flag", hashes the input, and then compares it with the ahash from the level5.hash.bin file. It contains methods such as str_xor() and hash_pw() (which are also used in the script below). To "guess" the password, I decided to go the brute force route with the dictionary.txt file that was given to me.
+
+To do this, I wrote a python script that goes through each line of the dictionary.txt file, and uses functions from the original level5.py file to decode the flag. By using the exact hash_pw() and str_xor() functions, level5.py doesn't even have to be used in the process. If the hash of a certain line matches the hash of the correct password, then the flag is found and can be decrypted using the str_xor() function. See the script below:
+
+-------------------------------------brute.py----------------------------------------------------
+import hashlib
+
+### THIS FUNCTION WILL NOT HELP YOU FIND THE FLAG --LT ########################
+def str_xor(secret, key):
+    #extend key to secret length
+    new_key = key
+    i = 0
+    while len(new_key) < len(secret):
+        new_key = new_key + key[i]
+        i = (i + 1) % len(key)        
+    return "".join([chr(ord(secret_c) ^ ord(new_key_c)) for (secret_c,new_key_c) in zip(secret,new_key)])
+###############################################################################
+
+def hash_pw(pw_str):
+    pw_bytes = bytearray()
+    pw_bytes.extend(pw_str.encode())
+    m = hashlib.md5()
+    m.update(pw_bytes)
+    return m.digest()
+
+
+
+flag_enc_bytes = open('level5.flag.txt.enc', 'rb').read()
+correct_pw_hash = open('level5.hash.bin', 'rb').read()
+
+flag_enc_str = flag_enc_bytes.decode()
+found_password = None
+
+with open("dictionary.txt", "r", encoding='utf-8', errors='ignore') as file:
+    for line_num, line in enumerate(file, 1):
+        candidate_pw = line.strip() 
+
+        candidate_hash = hash_pw(candidate_pw)
+
+        if candidate_hash == correct_pw_hash:
+            found_password = candidate_pw
+            print(f"Found password: '{found_password}'")
+            break
+
+
+if found_password:
+    decryption = str_xor(flag_enc_str, found_password)
+    print(decryption)
+-------------------------------------------------------------------------------------------------
+
