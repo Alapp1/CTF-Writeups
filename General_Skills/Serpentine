@@ -1,0 +1,11 @@
+This challenge is called "Serpentine" on picoCTF: https://play.picoctf.org/practice/challenge/251?category=5&difficulty=2&page=1&search=Serpentine
+
+The instructions read "Find the flag in the python script", and the python script does one of three things:
+    1. Print encouragement
+    2. Print the flag (doesn't actually do this just errors)
+    3. Exits the program
+
+The flag is defined as a combination of many different things. Ex:
+    flag_enc = chr(0x15) + chr(0x07) + chr(0x08) +......
+So it must be decrypted to be read using a defined str_xor() function. Luckily, a print_flag() function is also defined, and I can change the source code to whatever I want. Because I had write and execute permissions, I could just put the print_flag() function right after the flag is defined, and just print out the flag when the program begins running. This worked great for me.
+
