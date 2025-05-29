@@ -1,0 +1,54 @@
+This challenge is "flag_shop" on picoCTF: https://play.picoctf.org/practice/challenge/49?category=5&difficulty=2&page=2&search=
+
+To start the challenge, you connect to the server via netcat, and you're prompted with this:
+
+------------------------------------------------------------------------------------------------
+Welcome to the flag exchange
+We sell flags
+
+1. Check Account Balance
+
+2. Buy Flags
+
+3. Exit
+
+Enter a menu selection
+------------------------------------------------------------------------------------------------
+
+Pressing 1 displays your account balance (default is 1100), 2 allows you to choose between two different purchases, and anything else exits the program. On pressing 2, you can choose between 
+
+------------------------------------------------------------------------------------------------
+Currently for sale
+1. Defintely not the flag Flag
+2. 1337 Flag
+------------------------------------------------------------------------------------------------
+
+The source code is also given, and it says the flag is given if you can buy the 1337 flag. However, this flag costs 100000, and you're only given 1100 to start, so you have to find a way to give yourself more currency. The other option allows you to buy as many "Definitely not the flag" flags as you want, and each flag costs 900 credits. You cannot input negative numbers. 
+
+However, inspecting the code for this exposes a vulnerability:
+
+------------------------------------------------------------------------------------------------
+int account_balance = 1100;
+...
+...
+...
+...
+
+printf("These knockoff Flags cost 900 each, enter desired quantity\n");
+int number_flags = 0;
+fflush(stdin);
+scanf("%d", &number_flags);
+if(number_flags > 0){
+    int total_cost = 0;
+    total_cost = 900*number_flags;
+    printf("\nThe final cost is: %d\n", total_cost);
+    if(total_cost <= account_balance){
+        account_balance = account_balance - total_cost;
+        printf("\nYour current balance after transaction: %d\n\n", account_balance);
+    }
+------------------------------------------------------------------------------------------------
+
+Since account_balance is defined as an integer, it defaults to be a signed integer. Therefore, there is a maximum value an integer can hold, and when it is passed it'll wrap around to the minimum negative number. This means that the "account_balance = account_balance - total_cost;" line is exploitable, since there is no limit to how many flags can be bought (as long as its a positive amount). 
+
+I purchased 4000000 (4 million) of these flags, and my balance after doing so was 694968396. 4000000 * 900 is definitely greater than 2147483647, which is why my balance increased. This gave me enough currency to purchase the 1337 flag, and finish the challenge.
+
